@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>Scrips JS</title>
+        <script type="text/javascript" src="javascript/ds/stack.js"></script>
+        <script type="text/javascript" src="javascript/calculator.js"></script>
+        <script>
+            function calculate(equation) {
+                var calculator = new Calculator(50);
+                try {
+                    document.getElementById('spResult').innerHTML = calculator.calculate(equation);
+                } catch(err) {
+                    document.getElementById('spResult').innerHTML = 'Verify the equation';
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div>
+            <h1>Calculator</h1>
+            <input type="text" id="equation" value="{-2*[3*(4*(5+1.1-5.3)+3)+1]-10}/2">
+            <button id="btCalculate" onclick="calculate(document.getElementById('equation').value)">=</button>
+            <span id="spResult"></span>
+        </div>
+    </body>
+</html>
