@@ -1,15 +1,25 @@
 <html>
     <head>
         <title>Scrips JS</title>
-        <script type="text/javascript" src="javascript/ds/stack.js"></script>
-        <script type="text/javascript" src="javascript/calculator.js"></script>
+        <script type="text/javascript" src="ds/stack.js"></script>
+        <script type="text/javascript" src="calculator.js"></script>
+        <script type="text/javascript" src="delimitator_checker.js"></script>
         <script>
             function calculate(equation) {
                 var calculator = new Calculator(50);
                 try {
-                    document.getElementById('spResult').innerHTML = calculator.calculate(equation);
+                    document.getElementById('spResultEquation').innerHTML = calculator.calculate(equation);
                 } catch(err) {
-                    document.getElementById('spResult').innerHTML = 'Verify the equation';
+                    document.getElementById('spResultEquation').innerHTML = 'Verify the equation';
+                }
+            }
+
+            function delimitate_checker(equation) {
+                var checker = new DelimitatorChecker(50);
+                try {
+                    document.getElementById('spResultDelimitator').innerHTML = checker.check('{[(())]}()()(())()[()()[()(())]]') ? 'Checked' : 'Not Checked'; 
+                } catch(err) {
+                    document.getElementById('spResultDelimitator').innerHTML = err;
                 }
             }
         </script>
@@ -19,7 +29,13 @@
             <h1>Calculator</h1>
             <input type="text" id="equation" value="{-2*[3*(4*(5+1.1-5.3)+3)+1]-10}/2">
             <button id="btCalculate" onclick="calculate(document.getElementById('equation').value)">=</button>
-            <span id="spResult"></span>
+            <span id="spResultEquation"></span>
+        </div>
+        <div>
+            <h1>Delimitator Checker</h1>
+            <input type="text" id="delimitators" value="{[(())]}()()(())()[()()[()(())]]">
+            <button id="btDelimitator" onclick="delimitate_checker(document.getElementById('delimitators').value)">Check</button>
+            <span id="spResultDelimitator"></span>
         </div>
     </body>
 </html>
