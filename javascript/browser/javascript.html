@@ -14,10 +14,10 @@
                 }
             }
 
-            function delimitate_checker(equation) {
+            function delimitate_checker(delimitators) {
                 var checker = new DelimitatorChecker(50);
                 try {
-                    document.getElementById('spResultDelimitator').innerHTML = checker.check('{[(())]}()()(())()[()()[()(())]]') ? 'Checked' : 'Not Checked'; 
+                    document.getElementById('spResultDelimitator').innerHTML = checker.check(delimitators) ? 'Checked' : 'Not Checked'; 
                 } catch(err) {
                     document.getElementById('spResultDelimitator').innerHTML = err;
                 }
