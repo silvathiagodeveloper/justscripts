@@ -6,14 +6,19 @@ $image = [  'w','s','w','w','w','w',
 			'w','s','s','w','w','w',
 			'w','s','w','w','w','s'];
 			
-function normalize($image) : array
-{
+function normalize(array $source, int $height, int $width) {
 	$graph = [];
 	$line = [];
-	$count = 0;
-	foreach($image as $index => $node) {
-		$line[] = $node;
-		if(($index+1)%6 == 0) {
+	if(count($source) != $height * $width) {
+		throw new Exception('Invalid Source Size');
+	}
+
+	foreach($source as $key => $node) {
+		$line[] = [
+			'node' => $node,
+			'visited' => false
+		];
+		if(($key+1)%$width == 0) {
 			$graph[] = $line;
 			$line = [];
 		}
@@ -21,89 +26,80 @@ function normalize($image) : array
 	return $graph;
 }
 
-function initVisited($count) : array
-{
-	$visited = [];
-	for($y = 0; $y < $count; $y++) {
-		for($x = 0; $x < $count; $x++) {
-			$visited["{$y}_{$x}"] = false;
+function printGraph($graph){
+	foreach($graph as $line) {
+		foreach($line as $node) {
+			echo "{$node['node']} ";
 		}
+		echo "\n";
 	}
-	return $visited;
 }
 
-function breadthCount($matrix, $position, &$visited) {
-	$queue = [$position];
-	$count = 0;	
+function depthSearch(&$graph, $y, $x){
+	$stack[] = ['y' => $y, 'x' => $x];
+	$size = 0;
+	while(!empty($stack)) {
+		$node = array_pop($stack);
+		if(!isset($graph[$node['y']][$node['x']]) || $graph[$node['y']][$node['x']]['visited']) {
+			continue;
+		}
+		if($graph[$node['y']][$node['x']]['node'] == 's') {
+			$size++;
+			$graph[$node['y']][$node['x']]['visited'] = true;
+			array_push($stack,['y' => $node['y']+1, 'x' => $node['x']]);
+			array_push($stack,['y' => $node['y']-1, 'x' => $node['x']]);
+			array_push($stack,['y' => $node['y'],   'x' => $node['x']+1]);
+			array_push($stack,['y' => $node['y'],   'x' => $node['x']-1]);
+		}
+	}
+	return $size;
+}
+
+function breadthSearch(&$graph, $y, $x){
+	$queue[] = ['y' => $y, 'x' => $x];
+	$size = 0;
 	while(!empty($queue)) {
-		$pos = array_shift($queue);
-		if($pos['y'] >= 0 && $pos['y'] < count($matrix)) {
-			if($pos['x'] >= 0 && $pos['x'] < count($matrix[$pos['y']])) {
-				if(!$visited[$pos['y'].'_'.$pos['x']]) {
-					if($matrix[$pos['y']][$pos['x']] == 's') {
-						array_push($queue, ['x' => $pos['x'], 'y' => $pos['y']-1]);
-						array_push($queue, ['x' => $pos['x'], 'y' => $pos['y']+1]);
-						array_push($queue, ['x' => $pos['x']-1, 'y' => $pos['y']]);
-						array_push($queue, ['x' => $pos['x']+1, 'y' => $pos['y']]);
-						$count++;
-						$visited[$pos['y'].'_'.$pos['x']] = true;
-					}
-				}
-			}
+		$node = array_shift($queue);
+		if(!isset($graph[$node['y']][$node['x']]) || $graph[$node['y']][$node['x']]['visited']) {
+			continue;
+		}
+		if($graph[$node['y']][$node['x']]['node'] == 's') {
+			$size++;
+			$graph[$node['y']][$node['x']]['visited'] = true;
+			array_push($queue,['y' => $node['y']+1, 'x' => $node['x']]);
+			array_push($queue,['y' => $node['y']-1, 'x' => $node['x']]);
+			array_push($queue,['y' => $node['y'],   'x' => $node['x']+1]);
+			array_push($queue,['y' => $node['y'],   'x' => $node['x']-1]);
 		}
 	}
-	return $count;
+	return $size;
 }
 
-function depthCount($matrix, $position, &$visited) {
-	$queue = [$position];
-	$count = 0;	
-	while(!empty($queue)) {
-		$pos = array_pop($queue);
-		if($pos['y'] >= 0 && $pos['y'] < count($matrix)) {
-			if($pos['x'] >= 0 && $pos['x'] < count($matrix[$pos['y']])) {
-				if(!$visited[$pos['y'].'_'.$pos['x']]) {
-					if($matrix[$pos['y']][$pos['x']] == 's') {
-						array_push($queue, ['x' => $pos['x'], 'y' => $pos['y']-1]);
-						array_push($queue, ['x' => $pos['x'], 'y' => $pos['y']+1]);
-						array_push($queue, ['x' => $pos['x']-1, 'y' => $pos['y']]);
-						array_push($queue, ['x' => $pos['x']+1, 'y' => $pos['y']]);
-						$count++;
-						$visited[$pos['y'].'_'.$pos['x']] = true;
-					}
-				}
-			}
-		}
-	}
-	return $count;
-}
 
-$graph = normalize($image);
-
-$visited = initVisited(count($graph[0])); //y_x
+$graph = normalize($image,6,6);
+printGraph($graph);
 $islands = [];
 $timeStart = microtime(true);
-for($y = 0; $y < count($graph); $y++) {
-	for($x = 0; $x < count($graph[$y]); $x++) {
-		$count = depthCount($graph, ['x' => $x, 'y' => $y], $visited);
-		if($count > 0) {
-			$islands[] = $count;
+foreach($graph as $y => $line) {
+	foreach($line as $x => $node) {
+		$size = depthSearch($graph, $y, $x);
+		if($size > 0) {
+			$islands[] = $size;
 		}
 	}
 }
 print_r($islands);
-echo number_format((microtime(true) - $timeStart) *10000,5);
-
-$visited = initVisited(count($graph[0])); //y_x
+echo number_format((microtime(true) - $timeStart) *10000,5)."\n";
+$graph = normalize($image,6,6);
 $islands = [];
 $timeStart = microtime(true);
-for($y = 0; $y < count($graph); $y++) {
-	for($x = 0; $x < count($graph[$y]); $x++) {
-		$count = breadthCount($graph, ['x' => $x, 'y' => $y], $visited);
-		if($count > 0) {
-			$islands[] = $count;
+foreach($graph as $y => $line) {
+	foreach($line as $x => $node) {
+		$size = breadthSearch($graph, $y, $x);
+		if($size > 0) {
+			$islands[] = $size;
 		}
 	}
 }
 print_r($islands);
-echo number_format((microtime(true) - $timeStart) *10000,5);
+echo number_format((microtime(true) - $timeStart) *10000,5)."\n";
